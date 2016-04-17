@@ -5,19 +5,19 @@ import java.io.Serializable;
 /**
  * Created by Weimin on 4/8/2016.
  */
-public class NUser implements Serializable{
-    public final String name; //用户姓名、昵称
-    public final String lastLoginTime;//最后登录时间
-    public final String ban;//权限
-    public final int points;//积分
-    public final String userId;//用户ID
-    public final String username;//用户名
-    public final String id_card;//身份证号码
-    public final String badges;//头衔
-    public final String log_verify_code;//登录用户识别码  string，12小时内有效
-    public final String avatar;
-    public final String avatarUrl;
-    public final String email;
+public class NUser implements Serializable {
+    public String name; //用户姓名、昵称
+    public String lastLoginTime;//最后登录时间
+    public String ban;//权限
+    public int points;//积分
+    public String userId;//用户ID
+    public String username;//用户名
+    public String id_card;//身份证号码
+    public String badges;//头衔
+    public String log_verify_code;//登录用户识别码  string，12小时内有效
+    public String avatar;
+    public String avatarUrl;
+    public String email;
 
     public NUser() {
         this.name = null;
@@ -34,6 +34,24 @@ public class NUser implements Serializable{
         email = null;
 
     }
+
+    public  void init(NUser user) {
+
+        this.name = user.name;
+        this.lastLoginTime = user.lastLoginTime;
+        this.ban = user.ban;
+        this.points = user.points;
+        this.userId = user.userId;
+        this.username = user.username;
+        this.id_card = user.id_card;
+        this.badges = user.badges;
+        this.log_verify_code = user.log_verify_code;
+        avatar = user.avatar;
+        avatarUrl = user.avatarUrl;
+        email = user.email;
+
+    }
+
 
     public String getName() {
         return name;
@@ -70,8 +88,6 @@ public class NUser implements Serializable{
     public String getLog_verify_code() {
         return log_verify_code;
     }
-
-
 
 
 }

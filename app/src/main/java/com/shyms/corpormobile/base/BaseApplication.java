@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.shyms.corpormobile.modle.NUser;
 import com.shyms.corpormobile.util.SPUtil;
 
 /**
@@ -12,6 +13,7 @@ import com.shyms.corpormobile.util.SPUtil;
 public class BaseApplication extends Application {
 
     public static Context context;
+    public static NUser mUser = new NUser();
 
     @Override
     public void onCreate() {

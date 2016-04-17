@@ -42,15 +42,11 @@ public interface APIClient {
     @GET("/fryms/api/change_password.php")
     Observable<NObject> changePassword(@Field("username") String username,
                                        @Field("password") String password,
-                                       @Field("name") String name,
-                                       @Field("mobile") String mobile,
-                                       @Field("verify_code") String verify_code,
-                                       @Field("login") int login,
                                        @Field("new_password") String new_password);
 
     @GET("/fryms/api/check_verify_code.php")
-    Observable<NObject> checkVerifyCode(@Query("mobile") String mobile,
-                                        @Query("verify_code") String verify_code);
+    Observable<NObject<String>> checkVerifyCode(@Query("mobile") String mobile,
+                                                @Query("verify_code") String verify_code);
 
     @GET("/fryms/api/user_verify_code.php")
     Observable<NObject<Boolean>> UserVerifyCode(@Query("username") String username);

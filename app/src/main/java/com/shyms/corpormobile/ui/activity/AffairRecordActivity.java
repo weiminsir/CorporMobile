@@ -33,6 +33,8 @@ public class AffairRecordActivity extends BaseActivity {
         mTitle.setText("办事记录");
         mAdapter = new AffairRecordAdapter(this);
         mListView.setAdapter(mAdapter);
+
+
     }
 
 

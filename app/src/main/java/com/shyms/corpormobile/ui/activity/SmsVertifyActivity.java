@@ -2,6 +2,8 @@ package com.shyms.corpormobile.ui.activity;
 
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -10,9 +12,13 @@ import android.widget.TextView;
 
 import com.shyms.corpormobile.R;
 import com.shyms.corpormobile.base.BaseActivity;
+import com.shyms.corpormobile.base.BaseApplication;
+import com.shyms.corpormobile.constants.GlobalConstant;
 import com.shyms.corpormobile.helper.GotoHelper;
 import com.shyms.corpormobile.modle.NObject;
+import com.shyms.corpormobile.modle.NUser;
 import com.shyms.corpormobile.net.NetRequest;
+import com.shyms.corpormobile.util.SPUtil;
 import com.shyms.corpormobile.util.ToastUtil;
 
 import butterknife.Bind;
@@ -22,8 +28,8 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
 public class SmsVertifyActivity extends BaseActivity {
-    public static final String VERIFY_SOURCE = "verify_source";
 
+    public static final String VERIFY_SOURCE = "verify_source";
     @Bind(R.id.top_bar_left_image)
     protected ImageView mTopBarLeftIcon;
     @Bind(R.id.top_bar_title)
@@ -36,8 +42,10 @@ public class SmsVertifyActivity extends BaseActivity {
     protected EditText mVerifyCode;
     @Bind(R.id.re_send_code_auth_code_page)
     protected Button mSendCode;
-    private String mMobile;
+    private String mobile;
     private CountDownTimer mCountDownTimer;
+    private String password;
+    private String verifyCode;
 
 
     @Override
@@ -48,37 +56,67 @@ public class SmsVertifyActivity extends BaseActivity {
         mTopBarTitle.setText("验证手机号");
         mTopBarRightText.setText("继续");
         mTopBarLeftIcon.setVisibility(View.VISIBLE);
-        mMobile = getIntent().getStringExtra(VERIFY_SOURCE);
-        mPhoneNumber.setText(mMobile);
+
+        mobile = (String) SPUtil.get("mobile", "13611909778");
+        password = (String) SPUtil.get("password", "123456");
+
+
+//        mobile = getIntent().getStringExtra(VERIFY_SOURCE);
+        mPhoneNumber.setText(mobile);
         generateCountDownTimer();
 
     }
 
-
-    @OnClick(R.id.top_bar_right_text)
+    @OnClick(R.id.top_bar_right)
     protected void onClickContinue() {
-        NetRequest.APIInstance.checkVerifyCode(mMobile, mVerifyCode.getText().toString().trim())
+        verifyCode = mVerifyCode.getText().toString().trim();
+
+        if (TextUtils.isEmpty(verifyCode)) {
+            ToastUtil.shortShowText("验证码不能为空");
+            return;
+        }
+
+        NetRequest.APIInstance.checkVerifyCode(mobile, verifyCode)
                 .subscribeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<NObject>() {
+                .subscribe(results -> {
+                    if (results.code.equals("0")) {
+                        Log.d(GlobalConstant.TAG, "进入注册");
+                        SmsVertifyActivity.this.Register();
+                    }
+
+
+                }, throwable -> {
+//                    ToastUtil.shortShowText(throwable.toString());
+                });
+    }
+
+    private void Register() {
+
+        NetRequest.APIInstance.register(mobile, password, mobile, mobile, verifyCode, 1)
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<NObject<NUser>>() {
                     @Override
-                    public void call(NObject result) {
-//                    String code = "验证码错误";
-//                    Log.d("WICK", result.code);
-//                    Log.d("WICK", result.message.toString());
-                        ToastUtil.shortShowText("登录成功");
+                    public void call(NObject<NUser> results) {
+
+                        ToastUtil.shortShowText("注册进去了 ");
+                        BaseApplication.mUser.init(results.data);
                         GotoHelper.gotoActivity(SmsVertifyActivity.this, MainActivity.class);
-
-
                     }
                 }, throwable -> {
                 });
+
+
     }
 
     @OnClick(R.id.re_send_code_auth_code_page)
     protected void onClickSendVertifyCode() {
-        NetRequest.APIInstance.sendVerifyCode(mMobile)
+        NetRequest.APIInstance.sendVerifyCode(mobile)
                 .subscribeOn(AndroidSchedulers.mainThread())
-                .subscribe(results -> {
+                .subscribe(new Action1<NObject<Boolean>>() {
+                    @Override
+                    public void call(NObject<Boolean> results) {
+
+                    }
                 }, throwable -> {
                 });
         generateCountDownTimer();
@@ -105,5 +143,4 @@ public class SmsVertifyActivity extends BaseActivity {
         };
         mCountDownTimer.start();
     }
-
 }

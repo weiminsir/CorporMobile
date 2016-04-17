@@ -12,8 +12,10 @@ import com.shyms.corpormobile.R;
 import com.shyms.corpormobile.base.BaseActivity;
 import com.shyms.corpormobile.base.BaseApplication;
 import com.shyms.corpormobile.helper.GotoHelper;
+import com.shyms.corpormobile.modle.NObject;
 import com.shyms.corpormobile.net.NetRequest;
 import com.shyms.corpormobile.util.NetUtils;
+import com.shyms.corpormobile.util.SPUtil;
 import com.shyms.corpormobile.util.ToastUtil;
 import com.shyms.corpormobile.util.Util;
 
@@ -21,6 +23,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 
 public class RegisterActivity extends BaseActivity {
     @Bind(R.id.username_sign_up_page)
@@ -37,7 +40,7 @@ public class RegisterActivity extends BaseActivity {
     protected Button button;
 
     private String mobile;
-    private String passWord;
+    private String password;
     private String rePassWord;
 
     private int mMaxPassLength = 16;
@@ -53,19 +56,19 @@ public class RegisterActivity extends BaseActivity {
     @OnClick(R.id.sign_up_button_sign_up_page)
     protected void onClickRegister() {
         mobile = mUsername.getText().toString().trim();
-        passWord = mPassword.getText().toString().trim();
+        password = mPassword.getText().toString().trim();
         rePassWord = mRePassword.getText().toString().trim();
         if (TextUtils.isEmpty(rePassWord) ||
-                !rePassWord.equals(passWord)) {
+                !rePassWord.equals(password)) {
             ToastUtil.shortShowText("两次密码不一致");
             return;
         }
 
-        if (passWord.length() < mMinPassLength) {
+        if (password.length() < mMinPassLength) {
             ToastUtil.shortShowText("密码至少需要" + mMinPassLength + "位");
             return;
         }
-        if (passWord.length() > mMaxPassLength) {
+        if (password.length() > mMaxPassLength) {
             ToastUtil.shortShowText("密码至多" + mMaxPassLength + "位");
             return;
         }
@@ -78,13 +81,28 @@ public class RegisterActivity extends BaseActivity {
         if (Util.isMobileNO(mobile)) {
             NetRequest.APIInstance.sendVerifyCode(mobile)
                     .subscribeOn(AndroidSchedulers.mainThread())
-                    .subscribe(results -> {
-                        if (results.data.booleanValue()) {
-                            Intent intent = new Intent(RegisterActivity.this, SmsVertifyActivity.class);
-                            intent.putExtra(SmsVertifyActivity.VERIFY_SOURCE, mobile);
-                            startActivity(intent);
-                            finish();
+                    .subscribe(new Action1<NObject<Boolean>>() {
+                        @Override
+                        public void call(NObject<Boolean> results) {
+                            String vertifyCode = "1026";
+
+                            if ((results.code).equals(vertifyCode)) {
+                                ToastUtil.shortShowText(results.message);
+                                GotoHelper.gotoActivity(RegisterActivity.this, LoginActivity.class);
+                                finish();
+                            }
+
+                            if (results.data.booleanValue()) {
+                                SPUtil.put("mobile", mobile);
+                                SPUtil.put("password", password);
+                                Intent intent = new Intent(RegisterActivity.this, SmsVertifyActivity.class);
+                                RegisterActivity.this.startActivity(intent);
+                                RegisterActivity.this.finish();
+                            }
+
                         }
+                    }, throwable -> {
+
 
                     });
 
