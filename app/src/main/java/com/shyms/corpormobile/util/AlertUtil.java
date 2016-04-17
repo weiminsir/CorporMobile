@@ -3,6 +3,7 @@ package com.shyms.corpormobile.util;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface.OnClickListener;
+//:wqener;
 
 public class AlertUtil {
     public static void alert(Activity activity, String title, String message) {
